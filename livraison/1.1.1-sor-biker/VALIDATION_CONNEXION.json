@@ -1,0 +1,45 @@
+{
+  "version": "1.1.1-sor-biker",
+  "base": "1.0.1-sor-admin",
+  "cases": [
+    {
+      "width": 320,
+      "result": "PASS",
+      "registration_and_login_real_d1": true,
+      "errors_inside_dialog": true,
+      "duplicate_registration_rejected": true,
+      "cancel_without_registration": true,
+      "server_html_network_errors_simulated": true,
+      "me_failure_after_registration_simulated": true,
+      "timeout_and_double_submit_tested": false
+    },
+    {
+      "width": 390,
+      "result": "PASS",
+      "registration_and_login_real_d1": true,
+      "errors_inside_dialog": true,
+      "duplicate_registration_rejected": true,
+      "cancel_without_registration": true,
+      "server_html_network_errors_simulated": true,
+      "me_failure_after_registration_simulated": true,
+      "timeout_and_double_submit_tested": false
+    },
+    {
+      "width": 1366,
+      "result": "PASS",
+      "registration_and_login_real_d1": true,
+      "errors_inside_dialog": true,
+      "duplicate_registration_rejected": true,
+      "cancel_without_registration": true,
+      "server_html_network_errors_simulated": true,
+      "me_failure_after_registration_simulated": true,
+      "timeout_and_double_submit_tested": true
+    }
+  ],
+  "local_workerd_d1": true,
+  "physical_android_tested": false,
+  "actual_fivem_tested": false,
+  "production_tested": false,
+  "deployed": false,
+  "real_club_data_changed": false
+}

@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,os,secrets,shutil,socket,subprocess,tempfile,time
 from playwright.sync_api import sync_playwright,expect
-root=Path(__file__).resolve().parents[1];out=root/'livraison/1.1.0-sor-blackjack';out.mkdir(parents=True,exist_ok=True)
+root=Path(__file__).resolve().parents[1];out=root/'livraison/1.1.1-sor-biker';out.mkdir(parents=True,exist_ok=True)
 tmp=Path(tempfile.mkdtemp(prefix='sor-auth-local-'));server=None;admin_secret=secrets.token_urlsafe(24);cases=[]
 try:
  sock=socket.socket();sock.bind(('127.0.0.1',0));port=sock.getsockname()[1];sock.close();base='http://127.0.0.1:'+str(port)
@@ -65,7 +65,7 @@ try:
     menu('login');fill(name,password);submit('login',200);expect(page.locator('#authDialog')).not_to_be_visible();expect(page.locator('#siteMenu .menu-account strong')).to_have_text(name);expect(page.locator('#tables .table-card')).to_have_count(6);page.locator('#refreshBtn').tap();expect(page.locator('#tables .table-card')).to_have_count(6)
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+3');assert not errors,errors;cases.append({'width':width,'result':'PASS','registration_and_login_real_d1':True,'errors_inside_dialog':True,'duplicate_registration_rejected':True,'cancel_without_registration':True,'server_html_network_errors_simulated':True,'me_failure_after_registration_simulated':True,'timeout_and_double_submit_tested':timeout_tested});print('PASS connexion/inscription',width,flush=True);c.close()
    browser.close();request.dispose()
- (out/'VALIDATION_CONNEXION.json').write_text(json.dumps({'version':'1.1.0-sor-blackjack','base':'1.0.1-sor-admin','cases':cases,'local_workerd_d1':True,'physical_android_tested':False,'actual_fivem_tested':False,'production_tested':False,'deployed':False,'real_club_data_changed':False},ensure_ascii=False,indent=2)+'\n');print('PASS formulaires : inscription, connexion, reprise après refus, annulation, erreurs réseau/API et synchronisation, délai limité et absence de doubles envois.')
+ (out/'VALIDATION_CONNEXION.json').write_text(json.dumps({'version':'1.1.1-sor-biker','base':'1.0.1-sor-admin','cases':cases,'local_workerd_d1':True,'physical_android_tested':False,'actual_fivem_tested':False,'production_tested':False,'deployed':False,'real_club_data_changed':False},ensure_ascii=False,indent=2)+'\n');print('PASS formulaires : inscription, connexion, reprise après refus, annulation, erreurs réseau/API et synchronisation, délai limité et absence de doubles envois.')
 finally:
  if server is not None:
   server.terminate()

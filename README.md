@@ -1,5 +1,14 @@
 # JEUX-CLANDESTIN-SOR
 
+## Candidate 1.1.1-sor-biker — le clubhouse
+
+- [ZIP Déployable — HTML à la racine](livraison/1.1.1-sor-biker/JEUX-CLANDESTIN-SOR_1.1.1-sor-biker_Deployable.zip?raw=true)
+- [ZIP Sources et tests](livraison/1.1.1-sor-biker/JEUX-CLANDESTIN-SOR_1.1.1-sor-biker_Sources.zip?raw=true)
+- [Changements et vérifications](app/BIKER-1.1.1.md)
+- [Aperçu PC](livraison/1.1.1-sor-biker/LOBBY_1366.png) · [Aperçu mobile](livraison/1.1.1-sor-biker/LOBBY_390.png)
+
+Ambiance biker affirmée : patch MC, cuir cousu, plaques en acier et gros lettrage inclus dans les fichiers. Les jeux, comptes, soldes et permissions sont ceux de la 1.1.0 : Worker, schéma et scripts métier identiques. Tests Chromium/workerd/D1 en local aux largeurs 320/390/1366 px ; aucun appareil physique ni FiveM réel testé. Aucun déploiement de production. Les versions ci-dessous sont historiques.
+
 ## Candidate 1.1.0-sor-blackjack — nouvelle présentation et blackjack
 
 - [ZIP Déployable : HTML à la racine](livraison/1.1.0-sor-blackjack/JEUX-CLANDESTIN-SOR_1.1.0-sor-blackjack_Deployable.zip?raw=true)

@@ -10,6 +10,7 @@ files = (
     'style.css', 'sor-theme.css', 'sw.js', 'sw-register.js',
     'manifest.webmanifest', 'sons-of-reaper.png',
     'blackjack.html', 'blackjack.js', 'club-ui.css',
+    'club-heading.woff', 'FONT-LICENSE.txt',
 )
 # Valider l'ensemble avant de modifier les fichiers installables.
 for name in files:

@@ -1,0 +1,23 @@
+{
+  "project": "JEUX-CLANDESTIN-SOR",
+  "version": "1.1.1-sor-biker",
+  "mode": "sources_and_deployable",
+  "archives": [
+    {
+      "file": "JEUX-CLANDESTIN-SOR_1.1.1-sor-biker_Sources.zip",
+      "bytes": 2094617,
+      "files": 46,
+      "sha256": "837e842247a103b9c74bcbbb2e6dcbc9a0b01fffebd1a77a818ad359dc666704",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    },
+    {
+      "file": "JEUX-CLANDESTIN-SOR_1.1.1-sor-biker_Deployable.zip",
+      "bytes": 2051604,
+      "files": 22,
+      "sha256": "336b216cf2155dd5220293bced9b7d70133b3de5c38857ea1f1032ff48c4a8af",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    }
+  ]
+}

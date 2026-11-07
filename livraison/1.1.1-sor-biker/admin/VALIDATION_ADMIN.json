@@ -1,0 +1,45 @@
+{
+  "version": "1.1.1-sor-biker",
+  "worker_version": "4.2.0",
+  "date": "2026-11-07",
+  "secret_tested": "fixture_random_not_user_password",
+  "password_stored_in_zip": false,
+  "local_workerd_d1": true,
+  "browser_cases": [
+    {
+      "width": 320,
+      "http": 200,
+      "username_prefilled": true,
+      "admin_login": true,
+      "single_admin_account": true,
+      "lobby_tables": 6,
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "http": 200,
+      "username_prefilled": true,
+      "admin_login": true,
+      "single_admin_account": true,
+      "lobby_tables": 6,
+      "result": "PASS"
+    },
+    {
+      "width": 1366,
+      "http": 200,
+      "username_prefilled": true,
+      "admin_login": true,
+      "single_admin_account": true,
+      "lobby_tables": 6,
+      "result": "PASS"
+    }
+  ],
+  "public_registration_reserved_name_blocked": true,
+  "wrong_password_rejected": true,
+  "player_admin_access_rejected": true,
+  "physical_android_tested": false,
+  "actual_fivem_tested": false,
+  "production_deployed": false,
+  "production_account_created": false,
+  "real_club_data_changed": false
+}

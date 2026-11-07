@@ -1,3 +1,5 @@
+> Présentation actuelle : [BIKER-1.1.1.md](BIKER-1.1.1.md). Moteur et règles conservés depuis 1.1.0.
+
 > Version actuelle : voir [BLACKJACK-1.1.0.md](BLACKJACK-1.1.0.md). Les notes ci-dessous décrivent la base poker historique.
 
 # Poker SOR — Worker v4.1.1 · administrateur SOR-VARG

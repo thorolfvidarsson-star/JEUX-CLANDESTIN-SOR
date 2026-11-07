@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="fr" data-sor-build="1.1.0-sor-blackjack">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101111"><link rel="manifest" href="./manifest.webmanifest"><title>Blackjack — Sons of Reaper</title><link rel="stylesheet" href="./style.css?v=sor-1.1.0"><link rel="stylesheet" href="./sor-theme.css?v=sor-1.1.0"><link rel="stylesheet" href="./club-ui.css?v=sor-1.1.0"></head>
+<html lang="fr" data-sor-build="1.1.1-sor-biker">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101111"><link rel="manifest" href="./manifest.webmanifest"><link rel="preload" href="./club-heading.woff" as="font" type="font/woff" crossorigin><title>Blackjack — Sons of Reaper</title><link rel="stylesheet" href="./style.css?v=sor-1.1.1"><link rel="stylesheet" href="./sor-theme.css?v=sor-1.1.1"><link rel="stylesheet" href="./club-ui.css?v=sor-1.1.1"></head>
 <body class="bj-page">
-<header class="top"><a class="brand" href="./index.html"><span class="sor-wordmark"><strong>SONS OF REAPER</strong><small>PALETO BAY · CARD CLUB</small></span></a><a class="button ghost" href="./index.html">← Le lobby</a></header>
+<header class="top"><a class="brand" href="./index.html"><span class="sor-wordmark"><strong>SONS OF REAPER</strong><small>PALETO BAY · MOTORCYCLE CLUB</small></span></a><a class="button ghost" href="./index.html">← Le lobby</a></header>
 <main class="bj-main">
-<div class="bj-heading"><div><p class="eyebrow">LE FACE-À-FACE</p><h1>Blackjack<span class="title-dot">.</span></h1><p class="muted">Vous, le croupier. Et la prochaine carte.</p></div><div class="bj-wallet"><span id="bjName">Votre compte</span><strong id="bjBalance">—</strong><small>JETONS VIRTUELS</small></div></div>
+<div class="bj-heading"><div><p class="eyebrow">LE CLUBHOUSE / TABLE Nº 21</p><h1>Blackjack.</h1><p class="muted">Face au croupier. Gardez votre sang-froid.</p></div><div class="bj-wallet"><span id="bjName">Votre compte</span><strong id="bjBalance">—</strong><small>JETONS VIRTUELS</small></div></div>
 <p id="bjMessage" class="bj-message" role="status" aria-live="polite">Préparation de la table…</p>
 <div class="bj-layout">
 <section class="bj-table" aria-label="Table de blackjack">
- <div class="bj-table-label"><span>SONS OF REAPER · Nº 21</span><span>6 JEUX DE CARTES</span></div>
+ <div class="bj-table-label"><span>SONS OF REAPER · MC</span><span>6 JEUX DE CARTES</span></div>
  <div class="bj-hand-zone"><div class="bj-hand-label">LE CROUPIER <span id="bjDealerTotal" class="bj-score">—</span></div><div id="bjDealer" class="bj-cards" aria-label="Cartes du croupier"><span class="bj-empty">La table vous attend</span></div></div>
- <div class="bj-table-center" aria-hidden="true"><span>♠</span><strong>BLACKJACK</strong><small>PAIE 3 POUR 2 · LE CROUPIER RESTE SUR 17</small></div>
+ <div class="bj-table-center" aria-hidden="true"><span>♠</span><strong>SONS OF REAPER</strong><small>PAIE 3 POUR 2 · LE CROUPIER RESTE SUR 17</small></div>
  <div class="bj-hand-zone"><div id="bjPlayer" class="bj-cards" aria-label="Vos cartes"><span class="bj-empty">Faites votre jeu</span></div><div class="bj-hand-label">VOTRE MAIN <span id="bjPlayerTotal" class="bj-score">—</span></div></div>
  <div class="bj-stake">SUR LE TAPIS <strong id="bjStake">—</strong></div>
 </section>
@@ -24,4 +24,4 @@
  <details class="bj-rules"><summary>Les règles de cette table</summary><p>Battez le croupier sans dépasser 21. L’as vaut 1 ou 11, les figures 10. Le croupier tire jusqu’à 16 et reste sur tous les 17.</p><p>Blackjack naturel : gain de 3:2. Autre victoire : 1:1. Égalité : mise rendue. Doubler ajoute une mise identique, donne une seule carte puis termine votre tour. Disponible avec vos deux premières cartes, si le solde suffit.</p><p>6 jeux mélangés à chaque main. Pas de séparation des paires ni d’assurance. Une seule partie à la fois entre poker et blackjack. Votre main est conservée si vous quittez la page.</p><p>Jetons virtuels, sans valeur monétaire.</p></details>
 </aside></div>
 <section class="bj-history"><div class="section-head"><div><p class="eyebrow">VOTRE DERNIER TOUR DE TABLE</p><h2>Les dernières mains</h2></div><span class="muted tiny">8 dernières mains terminées</span></div><ol id="bjHistory"><li class="muted">Votre historique apparaîtra ici.</li></ol></section>
-</main><footer>SONS OF REAPER <span>Paleto Bay · Jetons virtuels · v1.1.0</span></footer><script src="./blackjack.js?v=sor-1.1.0" defer></script><script src="./sw-register.js?v=sor-1.1.0" defer></script></body></html>
+</main><footer>SONS OF REAPER <span>Paleto Bay · Jetons virtuels · v1.1.1</span></footer><script src="./blackjack.js?v=sor-1.1.1" defer></script><script src="./sw-register.js?v=sor-1.1.1" defer></script></body></html>
