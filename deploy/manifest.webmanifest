@@ -2,7 +2,7 @@
   "id": "./index.html",
   "name": "Sons of Reaper — Poker",
   "short_name": "SOR Poker",
-  "description": "Le cercle Sons of Reaper : poker et blackjack avec des jetons virtuels.",
+  "description": "Le clubhouse Sons of Reaper : poker, blackjack et roulette noir/blanc avec des jetons virtuels.",
   "lang": "fr-FR",
   "start_url": "./index.html",
   "scope": "./",

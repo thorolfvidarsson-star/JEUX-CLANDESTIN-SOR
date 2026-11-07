@@ -36,6 +36,8 @@ jobs:
         run: node --disable-warning=ExperimentalWarning tests/test_admin_bootstrap.mjs
       - name: Vérifier le blackjack et les transactions
         run: node --disable-warning=ExperimentalWarning tests/test_blackjack.mjs
+      - name: Vérifier la roulette et ses règlements
+        run: node --disable-warning=ExperimentalWarning tests/test_roulette.mjs
       - name: Préparer la page HTML
         if: ${{ inputs.deployable }}
         run: python3 tools/build.py

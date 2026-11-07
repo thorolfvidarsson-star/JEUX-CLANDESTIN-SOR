@@ -1,4 +1,4 @@
-// Sons of Reaper Poker & Blackjack 4.2.0 — fichier unique, modifié directement (les sources src/ de la v4.0.0 ne sont pas livrées).
+// Sons of Reaper Poker, Blackjack & Roulette 4.3.0 — fichier unique, modifié directement (les sources src/ de la v4.0.0 ne sont pas livrées).
 // =====================================================================
 // Sons of Reaper Poker — moteur Texas Hold'em (logique pure, sans I/O).
 // Chaque fonction modifie un contexte `ctx` ; le Worker persiste le
@@ -552,7 +552,7 @@ function publicTable(raw, seats, meta) {
 // Toute écriture de table passe par commit() : une seule transaction D1,
 // gardée par la valeur exacte de l'état lu (verrou optimiste).
 // =====================================================================
-const VERSION = '4.2.0';
+const VERSION = '4.3.0';
 const SESSION_SECONDS = 60 * 60 * 24 * 14;
 const IDLE_MS = 10 * 60 * 1000;
 const LOGIN_MAX_FAILS = 8;
@@ -617,6 +617,8 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS blackjack_events (hand_id TEXT NOT NULL REFERENCES blackjack_hands(id) ON DELETE CASCADE, request_key TEXT NOT NULL, action TEXT NOT NULL, from_revision INTEGER NOT NULL, wagered INTEGER NOT NULL, returned INTEGER NOT NULL, chips_delta INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY(hand_id,request_key))`,
   `CREATE TRIGGER IF NOT EXISTS guard_blackjack_no_poker BEFORE INSERT ON blackjack_hands WHEN NEW.status='playing' AND EXISTS(SELECT 1 FROM table_seats WHERE user_id=NEW.user_id) BEGIN SELECT RAISE(ABORT,'POKER_ACTIVE'); END`,
   `CREATE TRIGGER IF NOT EXISTS guard_poker_no_blackjack BEFORE INSERT ON table_seats WHEN EXISTS(SELECT 1 FROM blackjack_hands WHERE user_id=NEW.user_id AND status='playing') BEGIN SELECT RAISE(ABORT,'BLACKJACK_ACTIVE'); END`,
+  `CREATE TABLE IF NOT EXISTS roulette_spins (id TEXT PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, request_key TEXT NOT NULL, bets_json TEXT NOT NULL, result INTEGER NOT NULL CHECK(result BETWEEN 0 AND 36), stake INTEGER NOT NULL CHECK(stake BETWEEN 10 AND 10000), returned INTEGER NOT NULL CHECK(returned>=0), created_at INTEGER NOT NULL, UNIQUE(user_id,request_key))`,
+  `CREATE INDEX IF NOT EXISTS idx_roulette_user_recent ON roulette_spins(user_id,created_at)`,
 ];
 async function ensureSchema(env) {
   if (schemaDone.has(env.DB)) return;
@@ -899,6 +901,81 @@ async function bjRequest(request, env, user, action) {
   return bjReply(env, user.id, row.id);
 }
 
+// ---------- Roulette européenne : blanc remplace le rouge, zéro vert ----------
+const RL_WHITE = Object.freeze([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+const RL_RULES = Object.freeze({ minStake:10,maxStake:10000,step:10,pockets:37,whiteNumbers:RL_WHITE,
+  returns:{number:36,color:2,parity:2,half:2,dozen:3,column:3} });
+function rlColor(number) { return number===0?'green':RL_WHITE.includes(number)?'white':'black'; }
+function rlNormalize(bets) {
+  if(!Array.isArray(bets)||!bets.length||bets.length>49) throw httpErr('Choisissez entre 1 et 49 mises.');
+  const seen=new Set(), normalized=[];let stake=0;
+  for(const bet of bets){
+    if(!bet||Array.isArray(bet)||Object.keys(bet).length!==3||Object.keys(bet).some(k=>!['type','value','amount'].includes(k))) throw httpErr('Mise de roulette invalide.');
+    const {type,value,amount}=bet;
+    const valid=type==='number'?isInt(value,0,36):type==='color'?['white','black'].includes(value):type==='parity'?['even','odd'].includes(value):type==='half'?['low','high'].includes(value):['dozen','column'].includes(type)?isInt(value,1,3):false;
+    if(!valid||!isInt(amount,10,10000)||amount%10) throw httpErr('Mise invalide : jetons par multiples de 10.');
+    const key=type+':'+value;if(seen.has(key)) throw httpErr('Regroupez les jetons d’une même case en une seule mise.');seen.add(key);
+    stake+=amount;normalized.push({type,value,amount});
+  }
+  if(stake>RL_RULES.maxStake) throw httpErr('La mise totale ne peut pas dépasser 10 000 jetons.');
+  normalized.sort((a,b)=>(a.type+':'+a.value).localeCompare(b.type+':'+b.value));return {bets:normalized,stake};
+}
+function rlWins(bet,number){
+  if(bet.type==='number')return bet.value===number;
+  if(number===0)return false;
+  if(bet.type==='color')return rlColor(number)===bet.value;
+  if(bet.type==='parity')return number%2===(bet.value==='even'?0:1);
+  if(bet.type==='half')return bet.value==='low'?number<=18:number>=19;
+  if(bet.type==='dozen')return Math.ceil(number/12)===bet.value;
+  if(bet.type==='column')return (number-1)%3+1===bet.value;
+  return false;
+}
+function rlSettle(bets,number){
+  if(!isInt(number,0,36))throw httpErr('Résultat de roulette invalide.');
+  const details=bets.map(b=>({...b,won:rlWins(b,number),returned:rlWins(b,number)?b.amount*RL_RULES.returns[b.type]:0}));
+  const stake=bets.reduce((n,b)=>n+b.amount,0),returned=details.reduce((n,b)=>n+b.returned,0);
+  return {number,color:rlColor(number),stake,returned,net:returned-stake,bets:details};
+}
+function rlPublic(row){return row?{id:row.id,requestId:row.request_key,createdAt:Number(row.created_at),...rlSettle(JSON.parse(row.bets_json),Number(row.result))}:null;}
+async function rlReply(env,userId,spinId=null){
+  const user=await env.DB.prepare('SELECT id,username,chips,avatar,is_admin FROM users WHERE id=?').bind(userId).first();
+  if(!user)throw httpErr('Compte indisponible.',401);
+  const rows=(await env.DB.prepare('SELECT * FROM roulette_spins WHERE user_id=? ORDER BY created_at DESC,rowid DESC LIMIT 10').bind(userId).all()).results||[];
+  const row=spinId?await env.DB.prepare('SELECT * FROM roulette_spins WHERE id=? AND user_id=?').bind(spinId,userId).first():rows[0];
+  const poker=await env.DB.prepare('SELECT table_id FROM table_seats WHERE user_id=? LIMIT 1').bind(userId).first();
+  const blackjack=await env.DB.prepare("SELECT id FROM blackjack_hands WHERE user_id=? AND status='playing' LIMIT 1").bind(userId).first();
+  return json({user:publicUser(user),rules:RL_RULES,canPlay:!user.is_admin&&!poker&&!blackjack,pokerTable:poker?Number(poker.table_id):null,blackjackActive:!!blackjack,
+    spin:rlPublic(row),recent:rows.map(r=>{const h=rlPublic(r);return {id:h.id,number:h.number,color:h.color,stake:h.stake,returned:h.returned,net:h.net,createdAt:h.createdAt};})});
+}
+async function rlSpin(request,env,user){
+  if(user.isAdmin)throw httpErr('Le compte administrateur gère le club. Utilisez un compte joueur pour la roulette.',403);
+  const body=await readBody(request);
+  if(!body||Array.isArray(body)||Object.keys(body).some(k=>!['requestId','bets'].includes(k))||typeof body.requestId!=='string'||!/^[A-Za-z0-9_-]{16,80}$/.test(body.requestId))throw httpErr('Demande de roulette invalide.');
+  const {bets,stake}=rlNormalize(body.bets),canonical=JSON.stringify(bets);
+  const replay=await env.DB.prepare('SELECT * FROM roulette_spins WHERE user_id=? AND request_key=?').bind(user.id,body.requestId).first();
+  if(replay){if(replay.bets_json!==canonical)throw httpErr('Identifiant déjà utilisé pour d’autres mises.',409);return rlReply(env,user.id,replay.id);}
+  if(await env.DB.prepare('SELECT 1 FROM table_seats WHERE user_id=? LIMIT 1').bind(user.id).first())throw httpErr('Quittez votre siège de poker avant de jouer à la roulette.',409);
+  if(await env.DB.prepare("SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing' LIMIT 1").bind(user.id).first())throw httpErr('Terminez votre main de blackjack avant de jouer à la roulette.',409);
+  const number=randInt(37),result=rlSettle(bets,number),id=crypto.randomUUID(),stamp=Date.now();
+  try{
+    await env.DB.batch([
+      env.DB.prepare(`UPDATE users SET chips=chips+? WHERE id=? AND is_admin=0 AND chips>=?
+        AND NOT EXISTS(SELECT 1 FROM table_seats WHERE user_id=?)
+        AND NOT EXISTS(SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing')`)
+        .bind(result.net,user.id,stake,user.id,user.id),
+      env.DB.prepare(`INSERT INTO roulette_spins(id,user_id,request_key,bets_json,result,stake,returned,created_at)
+        VALUES(CASE WHEN changes()=1 THEN ? ELSE NULL END,?,?,?,?,?,?,?)`)
+        .bind(id,user.id,body.requestId,canonical,number,stake,result.returned,stamp),
+    ]);
+  }catch(error){
+    const prior=await env.DB.prepare('SELECT id,bets_json FROM roulette_spins WHERE user_id=? AND request_key=?').bind(user.id,body.requestId).first();
+    if(prior&&prior.bets_json===canonical)return rlReply(env,user.id,prior.id);
+    if(/constraint/i.test(String(error?.message)))throw httpErr('Mise refusée : vérifiez votre solde et qu’aucune autre partie n’est en cours.',409);
+    throw error;
+  }
+  return rlReply(env,user.id,id);
+}
+
 // ---------- Routes ----------
 async function route(req, env, url) {
   const method = req.method;
@@ -910,6 +987,9 @@ async function route(req, env, url) {
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers: { allow: 'GET, POST' } });
   if (method !== 'GET' && method !== 'POST') throw httpErr('Méthode non autorisée.', 405);
   await ensureSchema(env);
+
+  if(path==='roulette' && method==='GET'){const user=await requireUser(req,env);return rlReply(env,user.id);}
+  if(path==='roulette/spin' && method==='POST')return rlSpin(req,env,await requireUser(req,env));
 
   if (path === 'blackjack' && method === 'GET') { const user = await requireUser(req, env); return bjReply(env, user.id); }
   const blackjackRoute = path.match(/^blackjack\/(start|hit|stand|double)$/);

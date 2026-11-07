@@ -1,5 +1,14 @@
 # JEUX-CLANDESTIN-SOR
 
+## Candidate 1.2.0-sor-roulette — noir et blanc
+
+- [ZIP Déployable — HTML à la racine](livraison/1.2.0-sor-roulette/JEUX-CLANDESTIN-SOR_1.2.0-sor-roulette_Deployable.zip?raw=true)
+- [ZIP Sources et tests](livraison/1.2.0-sor-roulette/JEUX-CLANDESTIN-SOR_1.2.0-sor-roulette_Sources.zip?raw=true)
+- [Règles et vérifications](app/ROULETTE-1.2.0.md)
+- [Aperçu PC](livraison/1.2.0-sor-roulette/ROULETTE_1366.png) · [Aperçu mobile](livraison/1.2.0-sor-roulette/ROULETTE_390.png)
+
+Roulette européenne ajoutée au clubhouse : le noir reste noir, le blanc remplace le rouge, zéro vert. Jetons communs avec le poker et le blackjack, tirage serveur, mises combinées, historique privé et reprise sans double débit. Les jeux et comptes existants restent disponibles. Tests sur bases locales jetables et Chromium 320/390/1366 px ; aucun téléphone physique ni FiveM réel. Aucune production déployée. Les versions suivantes sont historiques.
+
 ## Candidate 1.1.1-sor-biker — le clubhouse
 
 - [ZIP Déployable — HTML à la racine](livraison/1.1.1-sor-biker/JEUX-CLANDESTIN-SOR_1.1.1-sor-biker_Deployable.zip?raw=true)

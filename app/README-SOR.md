@@ -1,3 +1,5 @@
+> Version actuelle : [ROULETTE-1.2.0.md](ROULETTE-1.2.0.md), ajout de la roulette noir/blanc au thème biker.
+
 > Présentation actuelle : [BIKER-1.1.1.md](BIKER-1.1.1.md). Moteur et règles conservés depuis 1.1.0.
 
 > Version actuelle : voir [BLACKJACK-1.1.0.md](BLACKJACK-1.1.0.md). Les notes ci-dessous décrivent la base poker historique.

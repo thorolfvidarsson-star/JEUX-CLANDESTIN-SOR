@@ -1,0 +1,52 @@
+{
+  "version": "1.2.0-sor-roulette",
+  "cases": [
+    {
+      "width": 320,
+      "real_local_d1": true,
+      "lobby_six_poker_tables": true,
+      "biker_local_font_loaded": true,
+      "hit_stand_double": true,
+      "reload_active_and_finished_hand": true,
+      "shared_balance": true,
+      "lost_response_replayed_once": true,
+      "horizontal_overflow": false,
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "real_local_d1": true,
+      "lobby_six_poker_tables": true,
+      "biker_local_font_loaded": true,
+      "hit_stand_double": true,
+      "reload_active_and_finished_hand": true,
+      "shared_balance": true,
+      "lost_response_replayed_once": true,
+      "horizontal_overflow": false,
+      "result": "PASS"
+    },
+    {
+      "width": 1366,
+      "real_local_d1": true,
+      "lobby_six_poker_tables": true,
+      "biker_local_font_loaded": true,
+      "hit_stand_double": true,
+      "reload_active_and_finished_hand": true,
+      "shared_balance": true,
+      "lost_response_replayed_once": true,
+      "horizontal_overflow": false,
+      "result": "PASS"
+    }
+  ],
+  "poker_two_players_fold_settlement": "PASS",
+  "admin_manage_only": "PASS",
+  "poker_ui_widths": [
+    390,
+    1366
+  ],
+  "service_worker_static_only": "PASS",
+  "physical_android_tested": false,
+  "actual_fivem_tested": false,
+  "production_deployed": false,
+  "real_data_changed": false
+}

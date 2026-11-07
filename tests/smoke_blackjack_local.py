@@ -3,7 +3,7 @@ from pathlib import Path
 import json,os,secrets,shutil,socket,subprocess,tempfile,time,uuid
 from playwright.sync_api import sync_playwright,expect
 root=Path(__file__).resolve().parents[1]
-out=root/'livraison/1.1.1-sor-biker';out.mkdir(parents=True,exist_ok=True)
+out=root/'livraison/1.2.0-sor-roulette';out.mkdir(parents=True,exist_ok=True)
 tmp=Path(tempfile.mkdtemp(prefix='sor-bj-local-'));server=None;secret=secrets.token_urlsafe(24);cases=[]
 try:
  sock=socket.socket();sock.bind(('127.0.0.1',0));port=sock.getsockname()[1];sock.close();base='http://127.0.0.1:'+str(port)
@@ -27,7 +27,7 @@ try:
     player=api('register',{'username':'Blackjack-'+str(width),'password':secrets.token_urlsafe(18)});token=player['token'];uid=player['user']['id']
     api('admin/user',{'id':uid,'username':player['user']['username'],'chips':5000},admin['token'])
     c=browser.new_context(viewport={'width':width,'height':850 if width<800 else 1000},is_mobile=width<800,has_touch=width<800,service_workers='block');page=c.new_page();errors=[];posts=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:posts.append(r.url) if '/api/blackjack/' in r.url and r.method=='POST' else None)
-    page.goto(base,wait_until='networkidle');expect(page.locator('#tables .table-card')).to_have_count(6);expect(page.locator('.game-choice-grid .game-choice')).to_have_count(2);page.evaluate('document.fonts.ready');assert page.evaluate('document.fonts.check("800 16px SorClub")');assert page.locator('.sor-reaper').evaluate('e=>e.complete&&e.naturalWidth>0');assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1');page.screenshot(path=str(out/('LOBBY_'+str(width)+'.png')),full_page=True)
+    page.goto(base,wait_until='networkidle');expect(page.locator('#tables .table-card')).to_have_count(6);expect(page.locator('.game-choice-grid .game-choice')).to_have_count(3);page.evaluate('document.fonts.ready');assert page.evaluate('document.fonts.check("800 16px SorClub")');assert page.locator('.sor-reaper').evaluate('e=>e.complete&&e.naturalWidth>0');assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1');page.screenshot(path=str(out/('LOBBY_'+str(width)+'.png')),full_page=True)
     page.locator('.game-choice[href="./blackjack.html"]').click();expect(page.locator('#bjLogin')).to_be_visible();expect(page.locator('#bjDeal')).to_be_disabled();page.evaluate('(t)=>localStorage.setItem("bw_token",t)',token);page.reload();expect(page.locator('#bjBalance')).to_have_text('5\u202f000');expect(page.locator('#bjDeal')).to_be_enabled()
     page.locator('[data-bet="100"]').click();expect(page.locator('#bjBet')).to_have_value('100');page.locator('#bjDeal').click();expect(page.locator('#bjStake')).to_contain_text('100');expect(page.locator('#bjPhase')).not_to_have_text('Prenez place');
     # Éviter seulement un blackjack naturel pour les gestes à tester : parties réelles.
@@ -69,9 +69,9 @@ try:
    for u in players:api('leave',{'tableId':1},u['token'])
    assert len(api('tables')['tables'])==6
    # Le service worker inclut les nouveaux fichiers, jamais les données API.
-   c=browser.new_context();page=c.new_page();page.goto(base,wait_until='networkidle');page.evaluate("navigator.serviceWorker.register('./sw.js').then(()=>navigator.serviceWorker.ready).then(()=>true)");page.reload(wait_until='networkidle');assert page.evaluate("caches.keys()")==['sor-v1.1.1'];cache_urls=page.evaluate("caches.open('sor-v1.1.1').then(c=>c.keys()).then(rs=>rs.map(r=>r.url))");assert any('/blackjack.html' in u for u in cache_urls);assert any('/club-heading.woff' in u for u in cache_urls);assert not any('/api/' in u for u in cache_urls);page.goto(base+'/blackjack.html',wait_until='networkidle');expect(page.locator('#bjLogin')).to_be_visible();c.close()
+   c=browser.new_context();page=c.new_page();page.goto(base,wait_until='networkidle');page.evaluate("navigator.serviceWorker.register('./sw.js').then(()=>navigator.serviceWorker.ready).then(()=>true)");page.reload(wait_until='networkidle');assert page.evaluate("caches.keys()")==['sor-v1.2.0'];cache_urls=page.evaluate("caches.open('sor-v1.2.0').then(c=>c.keys()).then(rs=>rs.map(r=>r.url))");assert any('/blackjack.html' in u for u in cache_urls);assert any('/club-heading.woff' in u for u in cache_urls);assert not any('/api/' in u for u in cache_urls);page.goto(base+'/blackjack.html',wait_until='networkidle');expect(page.locator('#bjLogin')).to_be_visible();c.close()
    browser.close();request.dispose()
- (out/'VALIDATION_BLACKJACK.json').write_text(json.dumps({'version':'1.1.1-sor-biker','cases':cases,'poker_two_players_fold_settlement':'PASS','admin_manage_only':'PASS','poker_ui_widths':[390,1366],'service_worker_static_only':'PASS','physical_android_tested':False,'actual_fivem_tested':False,'production_deployed':False,'real_data_changed':False},ensure_ascii=False,indent=2)+'\n')
+ (out/'VALIDATION_BLACKJACK.json').write_text(json.dumps({'version':'1.2.0-sor-roulette','cases':cases,'poker_two_players_fold_settlement':'PASS','admin_manage_only':'PASS','poker_ui_widths':[390,1366],'service_worker_static_only':'PASS','physical_android_tested':False,'actual_fivem_tested':False,'production_deployed':False,'real_data_changed':False},ensure_ascii=False,indent=2)+'\n')
  print('PASS blackjack local et poker multijoueur, aucune production utilisée.')
 finally:
  if server is not None:

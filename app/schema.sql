@@ -53,3 +53,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_blackjack_live_user ON blackjack_hands(use
 CREATE TABLE IF NOT EXISTS blackjack_events (hand_id TEXT NOT NULL REFERENCES blackjack_hands(id) ON DELETE CASCADE, request_key TEXT NOT NULL, action TEXT NOT NULL, from_revision INTEGER NOT NULL, wagered INTEGER NOT NULL, returned INTEGER NOT NULL, chips_delta INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY(hand_id,request_key));
 CREATE TRIGGER IF NOT EXISTS guard_blackjack_no_poker BEFORE INSERT ON blackjack_hands WHEN NEW.status='playing' AND EXISTS(SELECT 1 FROM table_seats WHERE user_id=NEW.user_id) BEGIN SELECT RAISE(ABORT,'POKER_ACTIVE'); END;
 CREATE TRIGGER IF NOT EXISTS guard_poker_no_blackjack BEFORE INSERT ON table_seats WHEN EXISTS(SELECT 1 FROM blackjack_hands WHERE user_id=NEW.user_id AND status='playing') BEGIN SELECT RAISE(ABORT,'BLACKJACK_ACTIVE'); END;
+
+-- Roulette : historique et idempotence, sans modification des tables existantes.
+CREATE TABLE IF NOT EXISTS roulette_spins (id TEXT PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, request_key TEXT NOT NULL, bets_json TEXT NOT NULL, result INTEGER NOT NULL CHECK(result BETWEEN 0 AND 36), stake INTEGER NOT NULL CHECK(stake BETWEEN 10 AND 10000), returned INTEGER NOT NULL CHECK(returned>=0), created_at INTEGER NOT NULL, UNIQUE(user_id,request_key));
+CREATE INDEX IF NOT EXISTS idx_roulette_user_recent ON roulette_spins(user_id,created_at);

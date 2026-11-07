@@ -1,0 +1,23 @@
+{
+  "project": "JEUX-CLANDESTIN-SOR",
+  "version": "1.2.0-sor-roulette",
+  "mode": "sources_and_deployable",
+  "archives": [
+    {
+      "file": "JEUX-CLANDESTIN-SOR_1.2.0-sor-roulette_Sources.zip",
+      "bytes": 2116060,
+      "files": 52,
+      "sha256": "448295a2368f2315fa59f17d8e6a470563447feaa73ef130b7ab79357d05b21c",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    },
+    {
+      "file": "JEUX-CLANDESTIN-SOR_1.2.0-sor-roulette_Deployable.zip",
+      "bytes": 2063108,
+      "files": 25,
+      "sha256": "d8a3803628a452a5a67ec218ee0fd698862bb4eb0db1165afc927fa3249d2523",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    }
+  ]
+}

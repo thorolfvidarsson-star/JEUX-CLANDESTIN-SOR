@@ -1,0 +1,47 @@
+{
+  "version": "1.2.0-sor-roulette",
+  "local_workerd_d1": true,
+  "cases": [
+    {
+      "width": 320,
+      "result": "PASS",
+      "black_white_green": true,
+      "chips_undo_remove_clear": true,
+      "all_37_numbers_and_return": true,
+      "wheel_matches_server_number": true,
+      "shared_balance_reload": true,
+      "lost_response_replay_once": true,
+      "poker_blackjack_exclusion": true,
+      "horizontal_overflow": false
+    },
+    {
+      "width": 390,
+      "result": "PASS",
+      "black_white_green": true,
+      "chips_undo_remove_clear": true,
+      "all_37_numbers_and_return": true,
+      "wheel_matches_server_number": true,
+      "shared_balance_reload": true,
+      "lost_response_replay_once": true,
+      "poker_blackjack_exclusion": true,
+      "horizontal_overflow": false
+    },
+    {
+      "width": 1366,
+      "result": "PASS",
+      "black_white_green": true,
+      "chips_undo_remove_clear": true,
+      "all_37_numbers_and_return": true,
+      "wheel_matches_server_number": true,
+      "shared_balance_reload": true,
+      "lost_response_replay_once": true,
+      "poker_blackjack_exclusion": true,
+      "horizontal_overflow": false
+    }
+  ],
+  "admin_manage_only": true,
+  "physical_android_tested": false,
+  "actual_fivem_tested": false,
+  "production_deployed": false,
+  "real_data_changed": false
+}

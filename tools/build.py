@@ -11,6 +11,7 @@ files = (
     'manifest.webmanifest', 'sons-of-reaper.png',
     'blackjack.html', 'blackjack.js', 'club-ui.css',
     'club-heading.woff', 'FONT-LICENSE.txt',
+    'roulette.html', 'roulette.js', 'roulette.css',
 )
 # Valider l'ensemble avant de modifier les fichiers installables.
 for name in files:
