@@ -1,15 +1,19 @@
 # JEUX-CLANDESTIN-SOR
 
-Dépôt préparé pour recevoir l'application et livrer des ZIP vérifiés.
+Dépôt préparé pour recevoir les jeux et livrer des ZIP vérifiés.
 
-**État initial : configuration uniquement. Les sources de l'application n'ont pas encore été ajoutées.** Le premier ZIP Sources contient cette configuration ; aucun ZIP Déployable d'application n'est annoncé à ce stade.
+**Version actuelle : page d'accueil HTML déployable. Les jeux ne sont pas encore intégrés.** Le ZIP Déployable contient `index.html` à la racine et affiche une page « En préparation ».
+
+[Télécharger le ZIP Déployable avec HTML](livraison/0.0.1-accueil/JEUX-CLANDESTIN-SOR_0.0.1-accueil_Deployable.zip?raw=true)
+
+Dans Cloudflare Pages, utiliser ce ZIP Déployable. Le ZIP de configuration initial ci-dessous ne contient aucune page de site et ne doit pas être déployé.
 
 [Télécharger le ZIP Sources de configuration](livraison/0.0.0-configuration/JEUX-CLANDESTIN-SOR_0.0.0-configuration_Sources.zip?raw=true)
 
 ## Organisation
 
-- `app/` : sources de l'application, à ajouter.
-- `deploy/` : fichiers prêts à installer après la compilation de l'application, à ajouter.
+- `app/` : page d'accueil et futures sources des jeux.
+- `deploy/` : page prête à installer, produite par `tools/build.py`.
 - `delivery.json` : nom du projet et chemins autorisés dans les archives.
 - `tools/package.py` : génération des ZIP et vérification des contenus, CRC et SHA-256.
 - `tests/` : tests du mécanisme de livraison, sans dépendance externe.
@@ -39,6 +43,7 @@ python3 tools/package.py --version 0.1.0
 Pour générer également le Déployable :
 
 ```sh
+python3 tools/build.py
 python3 tools/package.py --version 0.1.0 --deployable
 ```
 
@@ -55,7 +60,7 @@ Le Déployable contient directement les fichiers de `deploy/`, sans dossier pare
 
 ## Ajouter l'application
 
-Placer ses sources dans `app/` et les fichiers installables dans `deploy/`. Le projet n'impose pas de framework ni de commande de compilation tant que l'application n'est pas fournie. Si son organisation diffère, adapter explicitement `source_paths` et `deploy_directory` dans `delivery.json`. Un chemin de sources configuré mais absent provoque une erreur.
+La page d'accueil est préparée par `tools/build.py`. Pour ajouter les jeux, placer leurs sources dans `app/`, adapter la compilation à leur technologie et préparer leurs fichiers installables dans `deploy/`. Le projet n'impose aucun moteur de jeu. Si son organisation diffère, adapter explicitement `source_paths` et `deploy_directory` dans `delivery.json`. Un chemin de sources configuré mais absent provoque une erreur.
 
 Conserver les secrets, identifiants et bases réelles hors du dépôt et des livraisons. Le générateur ignore les dossiers techniques et refuse notamment les fichiers `.env` réels, clés privées et bases SQLite. Les fichiers `.env.example`, `.env.sample` et `.env.template` peuvent servir de modèles sans secret.
 

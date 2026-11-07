@@ -28,6 +28,9 @@ jobs:
           persist-credentials: false
       - name: Vérifier le générateur
         run: python3 -m unittest discover -s tests -v
+      - name: Préparer la page HTML
+        if: ${{ inputs.deployable }}
+        run: python3 tools/build.py
       - name: Générer et vérifier les archives
         env:
           DELIVERY_VERSION: ${{ inputs.version }}

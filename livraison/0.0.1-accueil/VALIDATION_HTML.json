@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-07",
+  "version": "0.0.1-accueil",
+  "content": "Page d’accueil uniquement, jeux non intégrés.",
+  "generator_tests_passed": 8,
+  "browser_cases": [
+    {
+      "width": 320,
+      "http": 200,
+      "horizontal_overflow": false,
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "http": 200,
+      "horizontal_overflow": false,
+      "result": "PASS"
+    },
+    {
+      "width": 1366,
+      "http": 200,
+      "horizontal_overflow": false,
+      "result": "PASS"
+    }
+  ],
+  "physical_android_tested": false,
+  "cloudflare_deployed": false,
+  "cloudflare_live_tested": false
+}
