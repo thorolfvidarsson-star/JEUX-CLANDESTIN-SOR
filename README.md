@@ -1,5 +1,18 @@
 # JEUX-CLANDESTIN-SOR
 
+## Version 1.0.1-sor-admin — SOR-VARG
+
+- [ZIP Déployable des jeux avec l'accès SOR-VARG](livraison/1.0.1-sor-admin/JEUX-CLANDESTIN-SOR_1.0.1-sor-admin_Deployable.zip?raw=true)
+- [ZIP Sources et tests](livraison/1.0.1-sor-admin/JEUX-CLANDESTIN-SOR_1.0.1-sor-admin_Sources.zip?raw=true)
+- [Configuration de SOR-VARG](app/ADMIN-SOR-VARG.md)
+- [Validation locale](livraison/1.0.1-sor-admin/VALIDATION_ADMIN.json)
+
+Le vrai poker fourni est conservé. Le nom **SOR-VARG** est prévu dans la console et réservé à l'inscription publique. Son compte administrateur s'initialise à la première connexion après configuration du secret Cloudflare **`ADMIN_BOOTSTRAP_PASSWORD`**. Aucun mot de passe en clair n'est publié ; aucune base réelle, aucun secret distant et aucun déploiement n'ont été modifiés.
+
+Worker **4.1.1**, schéma et règles des parties inchangés. Les comptes existants conservent leurs droits et mots de passe. Un compte joueur déjà nommé SOR-VARG n'est jamais promu automatiquement. Voir les instructions ci-dessus pour ce cas.
+
+La commande de vérification comprend désormais `node tests/test_admin_bootstrap.mjs`, en plus des huit tests Python du générateur. Les parcours navigateur utilisent une base D1 locale et un secret fictif aléatoire, sans téléphone physique ni FiveM réel. Les sections suivantes décrivent la livraison précédente.
+
 Le code complet du poker **Sons of Reaper / Paleto Bay** est intégré dans `app/` :
 Texas Hold’em multijoueur, comptes, jetons virtuels, tables, règles et administration.
 Interface noire et argent, rouge réservé aux yeux de la faucheuse. Aucune boutique.

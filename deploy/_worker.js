@@ -552,12 +552,21 @@ function publicTable(raw, seats, meta) {
 // Toute écriture de table passe par commit() : une seule transaction D1,
 // gardée par la valeur exacte de l'état lu (verrou optimiste).
 // =====================================================================
-const VERSION = '4.1.0';
+const VERSION = '4.1.1';
 const SESSION_SECONDS = 60 * 60 * 24 * 14;
 const IDLE_MS = 10 * 60 * 1000;
 const LOGIN_MAX_FAILS = 8;
 const LOGIN_LOCK_MS = 15 * 60 * 1000;
 const USERNAME_RE = /^[\p{L}\p{N}_-][\p{L}\p{N}_ -]{1,22}[\p{L}\p{N}_-]$/u;
+function bootstrapUsername(env) {
+  const name = String(env.ADMIN_BOOTSTRAP_USERNAME || 'SOR-VARG').trim();
+  if (!USERNAME_RE.test(name)) throw httpErr('Configuration du nom administrateur invalide.', 503);
+  return name;
+}
+function reservedUsername(name, env) {
+  const key = name.toLowerCase();
+  return key === 'manager' || key === bootstrapUsername(env).toLowerCase();
+}
 const MAX_CHIPS = 1000000000;
 const schemaDone = new WeakMap();
 
@@ -763,7 +772,7 @@ async function route(req, env, url) {
     const username = String(b.username || '').trim();
     if (!USERNAME_RE.test(username)) throw httpErr('Nom d’utilisateur invalide (3 à 24 caractères).');
     if (typeof b.password !== 'string' || b.password.length < 6 || b.password.length > 128) throw httpErr('Le mot de passe doit contenir entre 6 et 128 caractères.');
-    if (username.toLowerCase() === 'manager') throw httpErr('Ce nom est réservé.', 403);
+    if (reservedUsername(username, env)) throw httpErr('Ce nom est réservé.', 403);
     const salt = randomHex(16);
     const hash = await pbkdf2(b.password, salt);
     let id;
@@ -786,13 +795,17 @@ async function route(req, env, url) {
     const now = Date.now();
     const th = await env.DB.prepare('SELECT locked_until FROM login_throttle WHERE key=?').bind(key).first();
     if (th && Number(th.locked_until) > now) throw httpErr('Trop de tentatives. Réessayez dans quelques minutes.', 429);
-    const u = await env.DB.prepare('SELECT id,password_hash,salt FROM users WHERE username=? COLLATE NOCASE').bind(username).first();
-    if (!u && key === 'manager' && env.ADMIN_BOOTSTRAP_PASSWORD && safeEqual(password, String(env.ADMIN_BOOTSTRAP_PASSWORD))) {
-      // Création du compte manager uniquement si aucun n'existe et si le secret de déploiement est fourni.
-      const salt = randomHex(16);
-      const r = await env.DB.prepare("INSERT INTO users(username,password_hash,salt,chips,is_admin) VALUES('manager',?,?,0,1)")
-        .bind(await pbkdf2(password, salt), salt).run();
-      return createSession(env, Number(r.meta.last_row_id));
+    const u = await env.DB.prepare('SELECT id,password_hash,salt,is_admin FROM users WHERE username=? COLLATE NOCASE').bind(username).first();
+    const adminName = bootstrapUsername(env);
+    if (key === adminName.toLowerCase() && env.ADMIN_BOOTSTRAP_PASSWORD && safeEqual(password, String(env.ADMIN_BOOTSTRAP_PASSWORD))) {
+      if (u && !u.is_admin) throw httpErr('Ce nom est déjà utilisé par un compte joueur. Aucun droit administrateur n’a été ajouté : contactez l’administration.', 409);
+      if (!u) {
+        // Initialisation nominative depuis le secret Cloudflare, sans mot de passe embarqué.
+        const salt = randomHex(16);
+        const r = await env.DB.prepare('INSERT INTO users(username,password_hash,salt,chips,is_admin) VALUES(?,?,?,0,1)')
+          .bind(adminName, await pbkdf2(password, salt), salt).run();
+        return createSession(env, Number(r.meta.last_row_id));
+      }
     }
     const hash = await pbkdf2(password, u ? u.salt : 'x'.repeat(32));
     if (!u || !safeEqual(hash, u.password_hash)) {
@@ -814,7 +827,7 @@ async function route(req, env, url) {
     const b = await readBody(req) || {};
     const username = String(b.username || '').trim();
     if (!USERNAME_RE.test(username)) throw httpErr('Le nom d’utilisateur doit contenir 3 à 24 caractères.');
-    if (username.toLowerCase() === 'manager' && !u.isAdmin) throw httpErr('Ce nom est réservé.', 403);
+    if (reservedUsername(username, env) && !u.isAdmin) throw httpErr('Ce nom est réservé.', 403);
     const avatar = String(b.avatar || '').trim();
     if (avatar && !/^https:\/\/[^\s"'<>]{4,}$/i.test(avatar)) throw httpErr('Le lien de photo doit commencer par https://.');
     try {

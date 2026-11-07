@@ -28,6 +28,12 @@ jobs:
           persist-credentials: false
       - name: Vérifier le générateur
         run: python3 -m unittest discover -s tests -v
+      - name: Préparer Node pour les tests locaux du Worker
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Vérifier l’initialisation administrateur
+        run: node --disable-warning=ExperimentalWarning tests/test_admin_bootstrap.mjs
       - name: Préparer la page HTML
         if: ${{ inputs.deployable }}
         run: python3 tools/build.py

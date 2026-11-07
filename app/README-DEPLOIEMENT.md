@@ -1,4 +1,4 @@
-# Black Woods Saloon — Poker en ligne · v4.1.0
+# Poker SOR — Worker v4.1.1 · administrateur SOR-VARG
 
 Site statique + API Cloudflare Pages (mode avancé, `_worker.js`) + base D1.
 Jetons virtuels uniquement.
@@ -13,11 +13,8 @@ Déployez le contenu du ZIP tel quel à la racine du projet Pages (ne déposez p
 1. Décompressez le ZIP.
 2. Cloudflare Pages → votre projet → déployez le contenu à la racine (glisser-déposer ou Git).
 3. Vérifiez que le binding D1 `DB` pointe vers `cloudpoker-db` (inchangé par rapport à v3.x).
-4. Variable d'environnement **secrète** (facultative) : `ADMIN_BOOTSTRAP_PASSWORD`.
-   Elle sert uniquement à créer le compte `manager` s'il n'existe pas encore. Si le compte
-   `manager` existe déjà, ne la définissez pas et ne changez rien. **Si un compte `manager`
-   utilise encore le mot de passe historique 4444, changez-le depuis la console d'administration.**
-5. Contrôle : ouvrez `/api/health`. La réponse doit contenir `"version":"4.1.0"`.
+4. Pour initialiser **SOR-VARG**, définir le secret `ADMIN_BOOTSTRAP_PASSWORD` dans Cloudflare, puis se connecter avec ce nom et la valeur choisie. Le nom est déjà prévu par défaut ; une variable facultative `ADMIN_BOOTSTRAP_USERNAME` permet de le personnaliser. Les comptes administrateurs déjà enregistrés restent inchangés. Voir `ADMIN-SOR-VARG.md`.
+5. Contrôle : ouvrez `/api/health`. La réponse doit contenir `"version":"4.1.1"`. Le chargement des tables vérifie en plus la liaison D1.
 
 ## Migration depuis v3.x
 
