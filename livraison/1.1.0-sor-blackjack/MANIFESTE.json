@@ -1,0 +1,23 @@
+{
+  "project": "JEUX-CLANDESTIN-SOR",
+  "version": "1.1.0-sor-blackjack",
+  "mode": "sources_and_deployable",
+  "archives": [
+    {
+      "file": "JEUX-CLANDESTIN-SOR_1.1.0-sor-blackjack_Sources.zip",
+      "bytes": 2070012,
+      "files": 43,
+      "sha256": "591474437cd5857145f9f3958e3da132422a2a9eab80f475dd168b5c53e56467",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    },
+    {
+      "file": "JEUX-CLANDESTIN-SOR_1.1.0-sor-blackjack_Deployable.zip",
+      "bytes": 2029331,
+      "files": 20,
+      "sha256": "c773d0ab08decc8d6283a44aa263e751694b193a0d8f5c2f849364053ae31a90",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+> Version actuelle : voir [BLACKJACK-1.1.0.md](BLACKJACK-1.1.0.md). Les notes ci-dessous décrivent la base poker historique.
+
 # Poker SOR — Worker v4.1.1 · administrateur SOR-VARG
 
 Site statique + API Cloudflare Pages (mode avancé, `_worker.js`) + base D1.

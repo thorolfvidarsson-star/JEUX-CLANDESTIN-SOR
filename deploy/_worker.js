@@ -1,4 +1,4 @@
-// Sons of Reaper Poker 4.1.0 — fichier unique, modifié directement (les sources src/ de la v4.0.0 ne sont pas livrées).
+// Sons of Reaper Poker & Blackjack 4.2.0 — fichier unique, modifié directement (les sources src/ de la v4.0.0 ne sont pas livrées).
 // =====================================================================
 // Sons of Reaper Poker — moteur Texas Hold'em (logique pure, sans I/O).
 // Chaque fonction modifie un contexte `ctx` ; le Worker persiste le
@@ -552,7 +552,7 @@ function publicTable(raw, seats, meta) {
 // Toute écriture de table passe par commit() : une seule transaction D1,
 // gardée par la valeur exacte de l'état lu (verrou optimiste).
 // =====================================================================
-const VERSION = '4.1.1';
+const VERSION = '4.2.0';
 const SESSION_SECONDS = 60 * 60 * 24 * 14;
 const IDLE_MS = 10 * 60 * 1000;
 const LOGIN_MAX_FAILS = 8;
@@ -612,6 +612,11 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS table_seats (table_id INTEGER NOT NULL REFERENCES tables_state(id), user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, seat_no INTEGER NOT NULL, PRIMARY KEY(table_id,user_id), UNIQUE(table_id,seat_no))`,
   `CREATE TABLE IF NOT EXISTS login_throttle (key TEXT PRIMARY KEY, failures INTEGER NOT NULL DEFAULT 0, locked_until INTEGER NOT NULL DEFAULT 0)`,
   `CREATE INDEX IF NOT EXISTS idx_seats_user ON table_seats(user_id)`,
+  `CREATE TABLE IF NOT EXISTS blackjack_hands (id TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, request_key TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('playing','settled')), revision INTEGER NOT NULL DEFAULT 0, state_json TEXT NOT NULL, operation_token TEXT NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, UNIQUE(user_id,request_key))`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_blackjack_live_user ON blackjack_hands(user_id) WHERE status='playing'`,
+  `CREATE TABLE IF NOT EXISTS blackjack_events (hand_id TEXT NOT NULL REFERENCES blackjack_hands(id) ON DELETE CASCADE, request_key TEXT NOT NULL, action TEXT NOT NULL, from_revision INTEGER NOT NULL, wagered INTEGER NOT NULL, returned INTEGER NOT NULL, chips_delta INTEGER NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY(hand_id,request_key))`,
+  `CREATE TRIGGER IF NOT EXISTS guard_blackjack_no_poker BEFORE INSERT ON blackjack_hands WHEN NEW.status='playing' AND EXISTS(SELECT 1 FROM table_seats WHERE user_id=NEW.user_id) BEGIN SELECT RAISE(ABORT,'POKER_ACTIVE'); END`,
+  `CREATE TRIGGER IF NOT EXISTS guard_poker_no_blackjack BEFORE INSERT ON table_seats WHEN EXISTS(SELECT 1 FROM blackjack_hands WHERE user_id=NEW.user_id AND status='playing') BEGIN SELECT RAISE(ABORT,'BLACKJACK_ACTIVE'); END`,
 ];
 async function ensureSchema(env) {
   if (schemaDone.has(env.DB)) return;
@@ -710,6 +715,7 @@ async function mutateTable(env, id, fn) {
     try {
       ok = await commit(env, id, t.raw, ctx.st, delta, ops, res.guard || null);
     } catch (e) {
+      if (String(e?.message || '').includes('BLACKJACK_ACTIVE')) throw httpErr('Terminez votre main de blackjack avant de rejoindre le poker.', 409);
       if (/UNIQUE|CHECK|constraint/i.test(String(e && e.message))) throw httpErr('Action impossible pour le moment. Actualisez la table.', 409);
       throw e;
     }
@@ -755,6 +761,144 @@ async function sweepIdle(env) {
   }
 }
 
+// ---------- Blackjack : tirage serveur, état privé, mises et règlements atomiques ----------
+const BJ_RULES = Object.freeze({ minBet: 10, maxBet: 10000, betStep: 2, decks: 6, blackjackPayout: '3:2', dealerStandsSoft17: true, split: false, insurance: false });
+function bjScore(cards) {
+  let total = 0, aces = 0;
+  for (const card of cards) { const rank = card.slice(0, -1); if (rank === 'A') { total += 11; aces++; } else total += Math.min(10, RANKS[rank] || 0); }
+  while (total > 21 && aces) { total -= 10; aces--; }
+  return { total, soft: aces > 0, natural: cards.length === 2 && total === 21 };
+}
+function bjShoe() {
+  const deck = [];
+  for (let n = 0; n < BJ_RULES.decks; n++) for (const suit of SUITS) for (const rank of Object.keys(RANKS)) deck.push(rank + suit);
+  for (let i = deck.length - 1; i > 0; i--) { const j = randInt(i + 1); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  return deck;
+}
+function bjDraw(state) { const card = state.shoe.pop(); if (!card) throw httpErr('Pioche indisponible. Contactez un responsable.', 409); return card; }
+function bjSettle(state) {
+  const player = bjScore(state.player), dealer = bjScore(state.dealer);
+  let outcome, returned = 0;
+  if (player.total > 21) outcome = 'bust';
+  else if (player.natural && dealer.natural) { outcome = 'push'; returned = state.stake; }
+  else if (dealer.natural) outcome = 'dealer_blackjack';
+  else if (player.natural) { outcome = 'blackjack'; returned = state.stake * 5 / 2; }
+  else if (dealer.total > 21 || player.total > dealer.total) { outcome = 'win'; returned = state.stake * 2; }
+  else if (player.total === dealer.total) { outcome = 'push'; returned = state.stake; }
+  else outcome = 'lose';
+  state.status = 'settled'; state.outcome = outcome; state.returned = returned;
+  return state;
+}
+function bjFinish(state) {
+  if (bjScore(state.player).total <= 21) while (bjScore(state.dealer).total < 17) state.dealer.push(bjDraw(state));
+  return bjSettle(state);
+}
+function bjBegin(bet, shoe = bjShoe()) {
+  const state = { bet, stake: bet, shoe: [...shoe], player: [], dealer: [], status: 'playing', outcome: null, returned: 0, doubled: false };
+  state.player.push(bjDraw(state)); state.dealer.push(bjDraw(state)); state.player.push(bjDraw(state)); state.dealer.push(bjDraw(state));
+  if (bjScore(state.player).natural || bjScore(state.dealer).natural) bjSettle(state);
+  return state;
+}
+function bjPlay(current, action) {
+  const state = structuredClone(current);
+  if (state.status !== 'playing') throw httpErr('Cette main est terminée.', 409);
+  let wagered = 0;
+  if (action === 'double') {
+    if (state.player.length !== 2 || state.doubled) throw httpErr('Le double est disponible uniquement avec les deux premières cartes.', 409);
+    wagered = state.bet; state.stake += state.bet; state.doubled = true; state.player.push(bjDraw(state)); bjFinish(state);
+  } else if (action === 'hit') {
+    state.player.push(bjDraw(state));
+    if (bjScore(state.player).total > 21) bjSettle(state);
+    else if (bjScore(state.player).total === 21) bjFinish(state);
+  } else if (action === 'stand') bjFinish(state);
+  else throw httpErr('Action de blackjack inconnue.');
+  return { state, wagered, returned: state.status === 'settled' ? state.returned : 0 };
+}
+function bjPublic(row) {
+  if (!row) return null;
+  const state = JSON.parse(row.state_json), settled = state.status === 'settled';
+  return { id: row.id, revision: Number(row.revision), status: state.status, bet: state.bet, stake: state.stake, player: state.player,
+    dealer: settled ? state.dealer : [state.dealer[0], null], playerTotal: bjScore(state.player).total,
+    dealerTotal: settled ? bjScore(state.dealer).total : null, doubled: state.doubled,
+    outcome: settled ? state.outcome : null, returned: settled ? state.returned : null,
+    net: settled ? state.returned - state.stake : null, canDouble: !settled && state.player.length === 2 && !state.doubled,
+    updatedAt: Number(row.updated_at) };
+}
+function bjBody(body, fields) {
+  if (!body || Object.keys(body).some(key => !fields.includes(key)) || typeof body.requestId !== 'string' || !/^[A-Za-z0-9_-]{16,80}$/.test(body.requestId)) throw httpErr('Demande de blackjack invalide.');
+}
+async function bjReply(env, userId, handId = null) {
+  const user = await env.DB.prepare('SELECT id,username,chips,avatar,is_admin FROM users WHERE id=?').bind(userId).first();
+  if (!user) throw httpErr('Compte indisponible.', 401);
+  const row = handId ? await env.DB.prepare('SELECT * FROM blackjack_hands WHERE id=? AND user_id=?').bind(handId, userId).first()
+    : await env.DB.prepare("SELECT * FROM blackjack_hands WHERE user_id=? ORDER BY CASE status WHEN 'playing' THEN 0 ELSE 1 END,created_at DESC,rowid DESC LIMIT 1").bind(userId).first();
+  const recent = (await env.DB.prepare("SELECT id,revision,status,state_json,updated_at FROM blackjack_hands WHERE user_id=? AND status='settled' ORDER BY created_at DESC,rowid DESC LIMIT 8").bind(userId).all()).results || [];
+  const seat = await env.DB.prepare('SELECT table_id FROM table_seats WHERE user_id=? LIMIT 1').bind(userId).first();
+  return json({ user: publicUser(user), rules: BJ_RULES, pokerTable: seat ? Number(seat.table_id) : null, canPlay: !user.is_admin && !seat,
+    hand: bjPublic(row), recent: recent.map(r => { const h = bjPublic(r); return { id: h.id, bet: h.bet, stake: h.stake, outcome: h.outcome, returned: h.returned, net: h.net, updatedAt: h.updatedAt }; }) });
+}
+async function bjRequest(request, env, user, action) {
+  if (user.isAdmin) throw httpErr('Le compte administrateur gère le club. Utilisez un compte joueur pour le blackjack.', 403);
+  const body = await readBody(request);
+  if (action === 'start') {
+    bjBody(body, ['bet', 'requestId']);
+    if (!isInt(body.bet, BJ_RULES.minBet, BJ_RULES.maxBet) || body.bet % BJ_RULES.betStep) throw httpErr('Mise : nombre pair entre 10 et 10 000 jetons.');
+    const existing = await env.DB.prepare('SELECT * FROM blackjack_hands WHERE user_id=? AND request_key=?').bind(user.id, body.requestId).first();
+    if (existing) { if (JSON.parse(existing.state_json).bet !== body.bet) throw httpErr('Identifiant de demande déjà utilisé pour une autre mise.', 409); return bjReply(env, user.id, existing.id); }
+    if (await env.DB.prepare('SELECT 1 FROM table_seats WHERE user_id=? LIMIT 1').bind(user.id).first()) throw httpErr('Quittez votre table de poker avant de lancer le blackjack.', 409);
+    if (await env.DB.prepare("SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing'").bind(user.id).first()) throw httpErr('Une main de blackjack est déjà en cours. Reprenez-la.', 409);
+    const state = bjBegin(body.bet), id = crypto.randomUUID(), stamp = Date.now(), returned = state.status === 'settled' ? state.returned : 0;
+    try {
+      await env.DB.batch([
+        env.DB.prepare(`UPDATE users SET chips=chips+? WHERE id=? AND is_admin=0 AND chips>=?
+          AND NOT EXISTS(SELECT 1 FROM table_seats WHERE user_id=?) AND NOT EXISTS(SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing')`)
+          .bind(returned - body.bet, user.id, body.bet, user.id, user.id),
+        env.DB.prepare('INSERT INTO blackjack_hands(id,user_id,request_key,status,revision,state_json,operation_token,created_at,updated_at) SELECT ?,?,?,?,0,?,?,?,? WHERE changes()=1')
+          .bind(id, user.id, body.requestId, state.status, JSON.stringify(state), body.requestId, stamp, stamp),
+        env.DB.prepare(`INSERT INTO blackjack_events(hand_id,request_key,action,from_revision,wagered,returned,chips_delta,created_at)
+          VALUES(CASE WHEN EXISTS(SELECT 1 FROM blackjack_hands WHERE id=? AND operation_token=?) THEN ? ELSE NULL END,?,'start',-1,?,?,?,?)`)
+          .bind(id, body.requestId, id, body.requestId, body.bet, returned, returned - body.bet, stamp),
+      ]);
+    } catch (error) {
+      const replay = await env.DB.prepare('SELECT id,state_json FROM blackjack_hands WHERE user_id=? AND request_key=?').bind(user.id, body.requestId).first();
+      if (replay && JSON.parse(replay.state_json).bet === body.bet) return bjReply(env, user.id, replay.id);
+      if (/constraint|POKER_ACTIVE|BLACKJACK_ACTIVE/i.test(String(error?.message))) throw httpErr('Mise refusée : vérifiez votre solde et qu’aucune autre partie n’est en cours.', 409);
+      throw error;
+    }
+    return bjReply(env, user.id, id);
+  }
+  if (!['hit', 'stand', 'double'].includes(action)) throw httpErr('Action de blackjack inconnue.', 404);
+  bjBody(body, ['handId', 'revision', 'requestId']);
+  if (typeof body.handId !== 'string' || body.handId.length > 80 || !isInt(body.revision, 0, Number.MAX_SAFE_INTEGER)) throw httpErr('Main de blackjack invalide.');
+  const row = await env.DB.prepare('SELECT * FROM blackjack_hands WHERE id=? AND user_id=?').bind(body.handId, user.id).first();
+  if (!row) throw httpErr('Main introuvable.', 404);
+  const prior = await env.DB.prepare('SELECT action,from_revision FROM blackjack_events WHERE hand_id=? AND request_key=?').bind(row.id, body.requestId).first();
+  if (prior) {
+    if (prior.action !== action || Number(prior.from_revision) !== body.revision) throw httpErr('Identifiant déjà utilisé pour une autre action.', 409);
+    return bjReply(env, user.id, row.id);
+  }
+  if (row.status !== 'playing' || Number(row.revision) !== body.revision) throw httpErr('Cette main a évolué. Actualisez-la avant de jouer.', 409);
+  const { state, wagered, returned } = bjPlay(JSON.parse(row.state_json), action), stamp = Date.now();
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`UPDATE users SET chips=chips+? WHERE id=? AND is_admin=0 AND chips>=?
+        AND EXISTS(SELECT 1 FROM blackjack_hands WHERE id=? AND user_id=? AND revision=? AND status='playing')`)
+        .bind(returned - wagered, user.id, wagered, row.id, user.id, body.revision),
+      env.DB.prepare("UPDATE blackjack_hands SET state_json=?,status=?,revision=revision+1,operation_token=?,updated_at=? WHERE id=? AND user_id=? AND revision=? AND status='playing' AND changes()=1")
+        .bind(JSON.stringify(state), state.status, body.requestId, stamp, row.id, user.id, body.revision),
+      env.DB.prepare(`INSERT INTO blackjack_events(hand_id,request_key,action,from_revision,wagered,returned,chips_delta,created_at)
+        VALUES(CASE WHEN EXISTS(SELECT 1 FROM blackjack_hands WHERE id=? AND operation_token=? AND revision=?) THEN ? ELSE NULL END,?,?,?,?,?,?,?)`)
+        .bind(row.id, body.requestId, body.revision + 1, row.id, body.requestId, action, body.revision, wagered, returned, returned - wagered, stamp),
+    ]);
+  } catch (error) {
+    const replay = await env.DB.prepare('SELECT action,from_revision FROM blackjack_events WHERE hand_id=? AND request_key=?').bind(row.id, body.requestId).first();
+    if (replay && replay.action === action && Number(replay.from_revision) === body.revision) return bjReply(env, user.id, row.id);
+    if (/constraint/i.test(String(error?.message))) throw httpErr('Action refusée : la main ou votre solde a changé. Actualisez la table.', 409);
+    throw error;
+  }
+  return bjReply(env, user.id, row.id);
+}
+
 // ---------- Routes ----------
 async function route(req, env, url) {
   const method = req.method;
@@ -766,6 +910,10 @@ async function route(req, env, url) {
   if (method === 'OPTIONS') return new Response(null, { status: 204, headers: { allow: 'GET, POST' } });
   if (method !== 'GET' && method !== 'POST') throw httpErr('Méthode non autorisée.', 405);
   await ensureSchema(env);
+
+  if (path === 'blackjack' && method === 'GET') { const user = await requireUser(req, env); return bjReply(env, user.id); }
+  const blackjackRoute = path.match(/^blackjack\/(start|hit|stand|double)$/);
+  if (blackjackRoute && method === 'POST') return bjRequest(req, env, await requireUser(req, env), blackjackRoute[1]);
 
   if (path === 'register' && method === 'POST') {
     const b = await readBody(req) || {};
@@ -880,6 +1028,7 @@ async function route(req, env, url) {
   if (path === 'join' && method === 'POST') {
     const u = await requireUser(req, env);
     if (u.isAdmin) throw httpErr('Le compte administrateur sert uniquement à gérer le club et ne peut pas jouer.', 403);
+    if (await env.DB.prepare("SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing'").bind(u.id).first()) throw httpErr('Terminez votre main de blackjack avant de rejoindre le poker.', 409);
     const b = await readBody(req) || {};
     const id = Number(b.tableId);
     const cfg = await settings(env);
@@ -964,7 +1113,7 @@ async function route(req, env, url) {
   if (path === 'admin' && method === 'GET') {
     await requireAdmin(req, env);
     const cfg = await settings(env);
-    const users = (await env.DB.prepare('SELECT u.id,u.username,u.chips,u.is_admin,u.avatar, EXISTS(SELECT 1 FROM table_seats s WHERE s.user_id=u.id) AS seated FROM users u ORDER BY u.id DESC LIMIT 500').all()).results
+    const users = (await env.DB.prepare("SELECT u.id,u.username,u.chips,u.is_admin,u.avatar, (EXISTS(SELECT 1 FROM table_seats s WHERE s.user_id=u.id) OR EXISTS(SELECT 1 FROM blackjack_hands b WHERE b.user_id=u.id AND b.status='playing')) AS seated FROM users u ORDER BY u.id DESC LIMIT 500").all()).results
       .map(r => ({ id: Number(r.id), username: r.username, chips: Number(r.chips), is_admin: !!r.is_admin, avatar: r.avatar || '', seated: !!r.seated }));
     return json({ settings: cfg, users });
   }
@@ -1004,17 +1153,21 @@ async function route(req, env, url) {
     const target = await env.DB.prepare('SELECT is_admin FROM users WHERE id=?').bind(b.id).first();
     if (!target) throw httpErr('Compte introuvable.', 404);
     if (target.is_admin) throw httpErr('Le compte administrateur ne se modifie pas ici.', 403);
-    const seated = await env.DB.prepare('SELECT 1 FROM table_seats WHERE user_id=? LIMIT 1').bind(b.id).first();
+    const seated = await env.DB.prepare("SELECT 1 FROM table_seats WHERE user_id=? UNION ALL SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing' LIMIT 1").bind(b.id,b.id).first();
     if (seated) throw httpErr('Ce joueur est assis à une table. Faites-le quitter avant de modifier son compte.', 409);
     const username = String(b.username).trim();
     try {
       if (typeof b.password === 'string' && b.password.length) {
         if (b.password.length < 6 || b.password.length > 128) throw httpErr('Le mot de passe doit contenir entre 6 et 128 caractères.');
         const salt = randomHex(16);
-        await env.DB.prepare('UPDATE users SET username=?,chips=?,salt=?,password_hash=? WHERE id=?').bind(username, b.chips, salt, await pbkdf2(b.password, salt), b.id).run();
-        await env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(b.id).run();
+        const result = await env.DB.batch([
+          env.DB.prepare("UPDATE users SET username=?,chips=?,salt=?,password_hash=? WHERE id=? AND NOT EXISTS(SELECT 1 FROM table_seats WHERE user_id=?) AND NOT EXISTS(SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing')").bind(username,b.chips,salt,await pbkdf2(b.password,salt),b.id,b.id,b.id),
+          env.DB.prepare('DELETE FROM sessions WHERE user_id=? AND changes()=1').bind(b.id),
+        ]);
+        if (!result[0].meta.changes) throw httpErr('Ce joueur a commencé une partie. Terminez-la avant de modifier son compte.',409);
       } else {
-        await env.DB.prepare('UPDATE users SET username=?,chips=? WHERE id=?').bind(username, b.chips, b.id).run();
+        const result = await env.DB.prepare("UPDATE users SET username=?,chips=? WHERE id=? AND NOT EXISTS(SELECT 1 FROM table_seats WHERE user_id=?) AND NOT EXISTS(SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing')").bind(username,b.chips,b.id,b.id,b.id).run();
+        if (!result.meta.changes) throw httpErr('Ce joueur a commencé une partie. Terminez-la avant de modifier son compte.',409);
       }
     } catch (e) {
       if (e && e.status) throw e;
@@ -1030,10 +1183,10 @@ async function route(req, env, url) {
     const target = await env.DB.prepare('SELECT id,is_admin FROM users WHERE id=?').bind(b.id).first();
     if (!target) throw httpErr('Compte introuvable.', 404);
     if (target.is_admin) throw httpErr('Le compte administrateur est protégé et ne peut pas être supprimé.', 403);
-    const seated = await env.DB.prepare('SELECT 1 FROM table_seats WHERE user_id=? LIMIT 1').bind(b.id).first();
+    const seated = await env.DB.prepare("SELECT 1 FROM table_seats WHERE user_id=? UNION ALL SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing' LIMIT 1").bind(b.id,b.id).first();
     if (seated) throw httpErr('Ce joueur est encore assis à une table. Faites-le quitter avant de supprimer son profil.', 409);
-    await env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(b.id).run();
-    await env.DB.prepare('DELETE FROM users WHERE id=? AND is_admin=0').bind(b.id).run();
+    const result = await env.DB.prepare("DELETE FROM users WHERE id=? AND is_admin=0 AND NOT EXISTS(SELECT 1 FROM table_seats WHERE user_id=?) AND NOT EXISTS(SELECT 1 FROM blackjack_hands WHERE user_id=? AND status='playing')").bind(b.id,b.id,b.id).run();
+    if (!result.meta.changes) throw httpErr('Ce joueur a commencé une partie. Terminez-la avant de supprimer son compte.',409);
     return json({ ok: true, message: 'Profil supprimé.' });
   }
 

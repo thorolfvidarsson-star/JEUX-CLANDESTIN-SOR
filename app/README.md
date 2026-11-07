@@ -1,3 +1,5 @@
+> Version actuelle : voir [BLACKJACK-1.1.0.md](BLACKJACK-1.1.0.md). Les notes ci-dessous décrivent la base poker historique.
+
 # Sources du poker Sons of Reaper
 
 Poker Texas Hold’em multijoueur provenant du ZIP Black Woods confié par l'utilisateur,

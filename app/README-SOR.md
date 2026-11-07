@@ -1,3 +1,5 @@
+> Version actuelle : voir [BLACKJACK-1.1.0.md](BLACKJACK-1.1.0.md). Les notes ci-dessous décrivent la base poker historique.
+
 # Sons of Reaper — Poker Club
 
 Adaptation du ZIP Black Woods fourni : identité Sons of Reaper / Paleto Bay,

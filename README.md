@@ -1,5 +1,14 @@
 # JEUX-CLANDESTIN-SOR
 
+## Candidate 1.1.0-sor-blackjack — nouvelle présentation et blackjack
+
+- [ZIP Déployable : HTML à la racine](livraison/1.1.0-sor-blackjack/JEUX-CLANDESTIN-SOR_1.1.0-sor-blackjack_Deployable.zip?raw=true)
+- [ZIP Sources et tests](livraison/1.1.0-sor-blackjack/JEUX-CLANDESTIN-SOR_1.1.0-sor-blackjack_Sources.zip?raw=true)
+- [Règles, changements et limites](app/BLACKJACK-1.1.0.md)
+- [Validation blackjack et poker](livraison/1.1.0-sor-blackjack/VALIDATION_BLACKJACK.json)
+
+Accueil noir/argent plus lisible, accès direct aux deux jeux, blackjack contre le croupier avec solde partagé et reprise de main. Les comptes, l’administration et les corrections de connexion sont conservés. Mises et règlements transactionnels, demandes répétées sans double débit, résultats calculés côté serveur. Les tables D1 du blackjack sont ajoutées automatiquement ; aucune base existante n’est réinitialisée. Aucune production déployée. Tests sur bases locales jetables et Chromium aux largeurs 320/390/1366 px ; aucun appareil physique ni FiveM réel testé. **Les sections suivantes décrivent les versions historiques.**
+
 ## Version 1.0.2-sor-connexion — formulaires réactifs
 
 - [ZIP Déployable corrigé des jeux](livraison/1.0.2-sor-connexion/JEUX-CLANDESTIN-SOR_1.0.2-sor-connexion_Deployable.zip?raw=true)

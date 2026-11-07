@@ -9,6 +9,7 @@ files = (
     'app.js', 'tables.js', 'game.js', 'admin.js', '_worker.js',
     'style.css', 'sor-theme.css', 'sw.js', 'sw-register.js',
     'manifest.webmanifest', 'sons-of-reaper.png',
+    'blackjack.html', 'blackjack.js', 'club-ui.css',
 )
 # Valider l'ensemble avant de modifier les fichiers installables.
 for name in files:
