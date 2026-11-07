@@ -1,25 +1,34 @@
 # JEUX-CLANDESTIN-SOR
 
-Dépôt préparé pour recevoir les jeux et livrer des ZIP vérifiés.
+Le code complet du poker **Sons of Reaper / Paleto Bay** est intégré dans `app/` :
+Texas Hold’em multijoueur, comptes, jetons virtuels, tables, règles et administration.
+Interface noire et argent, rouge réservé aux yeux de la faucheuse. Aucune boutique.
+Le mode solo reste fermé, comme dans le ZIP fourni ; aucun autre jeu n'est inclus.
 
-**Version actuelle : page d'accueil HTML déployable. Les jeux ne sont pas encore intégrés.** Le ZIP Déployable contient `index.html` à la racine et affiche une page « En préparation ».
+## Télécharger la version 1.0.0-sor
 
-[Télécharger le ZIP Déployable avec HTML](livraison/0.0.1-accueil/JEUX-CLANDESTIN-SOR_0.0.1-accueil_Deployable.zip?raw=true)
+- [ZIP Déployable](livraison/1.0.0-sor/JEUX-CLANDESTIN-SOR_1.0.0-sor_Deployable.zip?raw=true)
+- [ZIP Sources complet](livraison/1.0.0-sor/JEUX-CLANDESTIN-SOR_1.0.0-sor_Sources.zip?raw=true)
+- [Empreintes SHA-256](livraison/1.0.0-sor/SHA256SUMS.txt)
 
-Dans Cloudflare Pages, utiliser ce ZIP Déployable. Le ZIP de configuration initial ci-dessous ne contient aucune page de site et ne doit pas être déployé.
+Le Déployable contient les fichiers à la racine pour Cloudflare Pages en mode avancé.
+Configurer le binding D1 `DB` sur votre base. Aucune base réelle ni secret n'est livré.
+Ce commit publie le code et les ZIP sur GitHub ; il ne déploie pas le site sur Cloudflare.
 
-[Télécharger le ZIP Sources de configuration](livraison/0.0.0-configuration/JEUX-CLANDESTIN-SOR_0.0.0-configuration_Sources.zip?raw=true)
+## Organisation et validation
 
-## Organisation
+- `app/` : toutes les sources confiées et adaptées, documentation et schéma SQL.
+- `deploy/` : interface, Worker et ressources préparés par `tools/build.py`.
+- `tools/`, `tests/` : génération et vérification des livraisons.
+- `livraison/` : versions précédentes conservées et nouveaux ZIP vérifiés.
 
-- `app/` : page d'accueil et futures sources des jeux.
-- `deploy/` : page prête à installer, produite par `tools/build.py`.
-- `delivery.json` : nom du projet et chemins autorisés dans les archives.
-- `tools/package.py` : génération des ZIP et vérification des contenus, CRC et SHA-256.
-- `tests/` : tests du mécanisme de livraison, sans dépendance externe.
-- `livraison/` : ZIP générés et manifeste de vérification.
+Les vérifications locales réalisées couvrent le chargement des six tables avec D1
+locale, l'ouverture de la connexion, les pages principales et le rendu mobile à
+390 px sans débordement. Aucune partie multijoueur complète ni D1 de production
+testée. Voir `app/README-SOR.md`. Le visuel est une recréation des références fournies.
 
-Ce dépôt est indépendant de SOR PB Gestion. Il ne contient ni ses sources privées ni les données du club.
+Le moteur vient du ZIP Black Woods fourni par l'utilisateur, sans reprise du code
+privé de SOR PB Gestion. Voir `app/README.md` pour le démarrage local.
 
 ## Générer les ZIP depuis GitHub
 
@@ -60,7 +69,7 @@ Le Déployable contient directement les fichiers de `deploy/`, sans dossier pare
 
 ## Ajouter l'application
 
-La page d'accueil est préparée par `tools/build.py`. Pour ajouter les jeux, placer leurs sources dans `app/`, adapter la compilation à leur technologie et préparer leurs fichiers installables dans `deploy/`. Le projet n'impose aucun moteur de jeu. Si son organisation diffère, adapter explicitement `source_paths` et `deploy_directory` dans `delivery.json`. Un chemin de sources configuré mais absent provoque une erreur.
+Le poker est préparé par `tools/build.py`, qui copie explicitement les pages, scripts, styles, Worker et visuel depuis `app/` vers `deploy/`. Pour ajouter d’autres jeux, placer leurs sources dans `app/` et adapter la préparation des fichiers installables dans `deploy/`. Le projet n'impose aucun moteur de jeu. Si son organisation diffère, adapter explicitement `source_paths` et `deploy_directory` dans `delivery.json`. Un chemin de sources configuré mais absent provoque une erreur.
 
 Conserver les secrets, identifiants et bases réelles hors du dépôt et des livraisons. Le générateur ignore les dossiers techniques et refuse notamment les fichiers `.env` réels, clés privées et bases SQLite. Les fichiers `.env.example`, `.env.sample` et `.env.template` peuvent servir de modèles sans secret.
 

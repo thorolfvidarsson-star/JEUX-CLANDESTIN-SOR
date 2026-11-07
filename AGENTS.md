@@ -1,6 +1,6 @@
 # Consignes de travail
 
-Le dépôt appartient à JEUX-CLANDESTIN-SOR. Il contient la configuration de livraison et une page d'accueil HTML demandée par l'utilisateur. Les jeux complets restent à fournir.
+Le dépôt appartient à JEUX-CLANDESTIN-SOR. Il contient le poker complet issu du ZIP fourni par l'utilisateur, adapté à Sons of Reaper, ainsi que la configuration de livraison.
 
 - Examiner les derniers commits et les fichiers présents avant de modifier l'application. Lire `README.md` et `delivery.json`.
 - Ajouter les sources de l'application lorsqu'elles sont fournies ; ne pas inventer une application ou reprendre le code privé d'un autre projet pour remplir le dépôt.

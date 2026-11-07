@@ -1,0 +1,14 @@
+{
+  "id": "./index.html",
+  "name": "Sons of Reaper — Poker",
+  "short_name": "SOR Poker",
+  "description": "Texas Hold’em au Sons of Reaper.",
+  "lang": "fr-FR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": []
+}

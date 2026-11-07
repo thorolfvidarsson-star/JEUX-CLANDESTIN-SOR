@@ -1,0 +1,10 @@
+# Configuration de référence. Sur Cloudflare Pages, les bindings (D1 `DB`) et les variables
+# d'environnement se règlent dans le tableau de bord ; ce fichier sert à `wrangler pages dev`.
+# Remplacez l'identifiant de base par celui de `cloudpoker-db` avant toute utilisation avec Wrangler.
+name = "sons-of-reaper-poker"
+compatibility_date = "2026-10-28"
+pages_build_output_dir = "."
+[[d1_databases]]
+binding = "DB"
+database_name = "cloudpoker-db"
+database_id = "REMPLACER_PAR_LE_DATABASE_ID"

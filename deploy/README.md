@@ -1,3 +1,7 @@
-# Fichiers installables à ajouter
+# Cloudflare Pages
 
-Placer ici les fichiers prêts à installer, issus du processus de compilation de l'application. Le générateur retire ce README du ZIP Déployable et refuse de produire un Déployable vide.
+Fichiers prêts à installer, préparés par `python3 tools/build.py` depuis `app/`.
+Le ZIP Déployable contient l'interface, le visuel et `_worker.js` à la racine.
+Configurer le binding D1 `DB` dans Cloudflare Pages. Le code n'inclut aucune base
+ni aucun secret de production. Une simple ouverture du HTML ou GitHub Pages
+ne suffit pas pour exécuter l'API et les parties multijoueurs.

@@ -1,5 +1,20 @@
-# Page d'accueil
+# Sources du poker Sons of Reaper
 
-`index.html` est la page d'accueil autonome demandée par l'utilisateur. Elle indique que les jeux sont en préparation. Elle ne contient ni moteur de jeu, ni connexion des membres, ni accès à une base.
+Poker Texas Hold’em multijoueur provenant du ZIP Black Woods confié par l'utilisateur,
+adapté à Sons of Reaper / Paleto Bay. Interface noire et argent, rouge uniquement
+dans les yeux de la faucheuse. Aucune boutique ni paiement.
 
-Préparation : `python3 tools/build.py`. Les sources des jeux restent à ajouter lorsqu'elles seront fournies.
+Les comptes, soldes virtuels, tables et administration du moteur 4.1.0 sont conservés.
+Le mode solo est fermé comme dans la source fournie ; aucun autre jeu n'a été ajouté.
+Le visuel de la faucheuse est une recréation inspirée des références fournies.
+
+`_worker.js` contient le moteur et l'API Cloudflare Pages. `schema.sql` documente D1.
+`wrangler.toml` permet le développement local ; son identifiant D1 est fictif.
+La charte principale est dans `sor-theme.css`, après `style.css`.
+
+Depuis ce dossier, avec Node.js 24 et Wrangler 4 :
+
+    npx wrangler pages dev . --ip 127.0.0.1 --port 8788
+
+La base locale est distincte de la production. Vérifier `/api/health`, puis le lobby.
+Voir README-SOR.md et README-DEPLOIEMENT.md (historique du moteur d'origine).

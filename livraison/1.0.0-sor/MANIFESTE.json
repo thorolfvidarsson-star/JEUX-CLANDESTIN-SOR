@@ -1,0 +1,23 @@
+{
+  "project": "JEUX-CLANDESTIN-SOR",
+  "version": "1.0.0-sor",
+  "mode": "sources_and_deployable",
+  "archives": [
+    {
+      "file": "JEUX-CLANDESTIN-SOR_1.0.0-sor_Sources.zip",
+      "bytes": 2030801,
+      "files": 32,
+      "sha256": "e109b4d66ef3dfc0f95dc247b7f494259a9867cae2166a38f3766bc722a199a0",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    },
+    {
+      "file": "JEUX-CLANDESTIN-SOR_1.0.0-sor_Deployable.zip",
+      "bytes": 2014299,
+      "files": 17,
+      "sha256": "9f900589d0ba1a76a1c7829743b54125037cb98068e6b52cf6a6b736e16c2cc8",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    }
+  ]
+}
