@@ -1,0 +1,9 @@
+{
+  "base": "1.0.1-sor-admin",
+  "valid_registration_http": 200,
+  "invalid_login_http": 401,
+  "duplicate_registration_http": 409,
+  "error_inside_auth_dialog": false,
+  "modal_stays_open_without_visible_error": true,
+  "production_tested": false
+}

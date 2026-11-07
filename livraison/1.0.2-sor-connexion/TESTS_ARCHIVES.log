@@ -1,0 +1,13 @@
+test_chemin_externe_version_et_sortie_recursive_refuses (test_package.DeliveryTests.test_chemin_externe_version_et_sortie_recursive_refuses) ... ok
+test_deployable_a_la_racine_et_fichiers_speciaux_conserves (test_package.DeliveryTests.test_deployable_a_la_racine_et_fichiers_speciaux_conserves) ... ok
+test_deployable_vide_refuse_sans_livraison_partielle (test_package.DeliveryTests.test_deployable_vide_refuse_sans_livraison_partielle) ... ok
+test_historique_git_explicitement_selectionne_refuse (test_package.DeliveryTests.test_historique_git_explicitement_selectionne_refuse) ... ok
+test_lien_symbolique_refuse (test_package.DeliveryTests.test_lien_symbolique_refuse) ... ok
+test_meme_version_differente_non_ecrasee (test_package.DeliveryTests.test_meme_version_differente_non_ecrasee) ... ok
+test_secret_selectionne_refuse (test_package.DeliveryTests.test_secret_selectionne_refuse) ... ok
+test_sources_exactes_empreinte_et_reproductibilite (test_package.DeliveryTests.test_sources_exactes_empreinte_et_reproductibilite) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.013s
+
+OK

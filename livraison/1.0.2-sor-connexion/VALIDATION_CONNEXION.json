@@ -1,0 +1,58 @@
+{
+  "version": "1.0.2-sor-connexion",
+  "base": "1.0.1-sor-admin",
+  "cases": [
+    {
+      "width": 320,
+      "result": "PASS",
+      "registration_and_login_real_d1": true,
+      "errors_inside_dialog": true,
+      "duplicate_registration_rejected": true,
+      "cancel_without_registration": true,
+      "server_html_network_errors_simulated": true,
+      "me_failure_after_registration_simulated": true,
+      "timeout_and_double_submit_tested": false
+    },
+    {
+      "width": 390,
+      "result": "PASS",
+      "registration_and_login_real_d1": true,
+      "errors_inside_dialog": true,
+      "duplicate_registration_rejected": true,
+      "cancel_without_registration": true,
+      "server_html_network_errors_simulated": true,
+      "me_failure_after_registration_simulated": true,
+      "timeout_and_double_submit_tested": false
+    },
+    {
+      "width": 1366,
+      "result": "PASS",
+      "registration_and_login_real_d1": true,
+      "errors_inside_dialog": true,
+      "duplicate_registration_rejected": true,
+      "cancel_without_registration": true,
+      "server_html_network_errors_simulated": true,
+      "me_failure_after_registration_simulated": true,
+      "timeout_and_double_submit_tested": true
+    }
+  ],
+  "local_workerd_d1": true,
+  "physical_android_tested": false,
+  "actual_fivem_tested": false,
+  "production_tested": false,
+  "deployed": false,
+  "real_club_data_changed": false,
+  "base_commit": "2dbe7594f67a3b64714de6b33fca7cc9e6ade460",
+  "api_worker_unchanged": true,
+  "schema_unchanged": true,
+  "business_permissions_unchanged": true,
+  "game_engine_unchanged": true,
+  "sor_varg_preserved": true,
+  "generator_tests_passed": 8,
+  "admin_node_tests_passed": true,
+  "admin_browser_contexts_passed": 3,
+  "new_api": false,
+  "new_library": false,
+  "multiplayer_hand_played": false,
+  "static_cache": "sor-v1.0.2"
+}

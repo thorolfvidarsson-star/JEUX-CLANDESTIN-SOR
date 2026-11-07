@@ -1,0 +1,4 @@
+PASS connexion/inscription 320
+PASS connexion/inscription 390
+PASS connexion/inscription 1366
+PASS formulaires : inscription, connexion, reprise après refus, annulation, erreurs réseau/API et synchronisation, délai limité et absence de doubles envois.

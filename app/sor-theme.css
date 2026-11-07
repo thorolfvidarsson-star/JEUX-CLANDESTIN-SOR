@@ -14,3 +14,9 @@ main{max-width:1200px}.saloon-hero{min-height:310px;margin-top:28px;padding:clam
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .sor-reaper{display:block;width:100%;height:auto;max-height:360px;object-fit:contain;mix-blend-mode:screen}.hero-emblem.hero-official-brand{width:clamp(220px,30vw,340px)}@media(max-width:520px){.hero-emblem.hero-official-brand{width:240px}.sor-reaper{max-height:240px}}
+
+/* Connexion : erreurs et progression dans la fenêtre active. */
+#authDialog{max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain}
+#authDialog .auth-error{margin:12px 0 0;padding:12px;border:1px solid #888;border-radius:4px;color:#f2f2f2;background:#ffffff0a;font:14px/1.5 Arial,sans-serif;overflow-wrap:anywhere}
+#authDialog .auth-switch{min-height:44px;border:0;background:none;padding:12px 0;margin-top:8px;text-align:left;color:var(--muted);font-family:inherit;line-height:1.5;cursor:pointer}
+#authDialog button:disabled{opacity:.65;cursor:wait}

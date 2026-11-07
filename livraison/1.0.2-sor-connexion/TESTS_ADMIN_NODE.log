@@ -1,0 +1,3 @@
+PASS SOR-VARG : secret requis, nom réservé, compte unique haché, accès admin, joueur refusé, changement de mot de passe conservé, tables et relations intactes.
+PASS collision : aucun compte joueur promu, écrasé ou vidé automatiquement.
+PASS compatibilité : comptes manager existants et nom configurable conservés.

@@ -1,5 +1,14 @@
 # JEUX-CLANDESTIN-SOR
 
+## Version 1.0.2-sor-connexion — formulaires réactifs
+
+- [ZIP Déployable corrigé des jeux](livraison/1.0.2-sor-connexion/JEUX-CLANDESTIN-SOR_1.0.2-sor-connexion_Deployable.zip?raw=true)
+- [ZIP Sources et tests](livraison/1.0.2-sor-connexion/JEUX-CLANDESTIN-SOR_1.0.2-sor-connexion_Sources.zip?raw=true)
+- [Correctif et limites des tests](app/CONNEXION-1.0.2.md)
+- [Validation des formulaires](livraison/1.0.2-sor-connexion/VALIDATION_CONNEXION.json)
+
+Les messages de refus apparaissent dans la fenêtre de connexion/inscription, au lieu de rester cachés derrière elle. La validation des champs est visible, l'envoi indique sa progression, les doubles demandes sont évitées et les contrôles se réactivent après erreur ou expiration du délai. L'inscription et la connexion sont testées sur workerd/D1 locale en 320/390/1366 px. Le Worker et les règles de comptes de la 1.0.1 sont inchangés ; SOR-VARG et les anciens comptes restent conservés. Aucun déploiement ni changement de données réelles. Les versions suivantes ci-dessous sont historiques.
+
 ## Version 1.0.1-sor-admin — SOR-VARG
 
 - [ZIP Déployable des jeux avec l'accès SOR-VARG](livraison/1.0.1-sor-admin/JEUX-CLANDESTIN-SOR_1.0.1-sor-admin_Deployable.zip?raw=true)
