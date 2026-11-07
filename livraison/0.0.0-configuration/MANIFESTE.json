@@ -1,0 +1,15 @@
+{
+  "project": "JEUX-CLANDESTIN-SOR",
+  "version": "0.0.0-configuration",
+  "mode": "sources",
+  "archives": [
+    {
+      "file": "JEUX-CLANDESTIN-SOR_0.0.0-configuration_Sources.zip",
+      "bytes": 9312,
+      "files": 10,
+      "sha256": "233927d6cae8f835e6eae1be9c3377fc01e99fb2b6c14b2acfa51a813cea71f2",
+      "crc": "PASS",
+      "all_bytes_verified": true
+    }
+  ]
+}

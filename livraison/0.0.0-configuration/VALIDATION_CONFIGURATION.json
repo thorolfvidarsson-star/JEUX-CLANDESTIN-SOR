@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-07",
+  "project": "JEUX-CLANDESTIN-SOR",
+  "status": "configuration_only_application_not_provided",
+  "local_tests": {
+    "command": "python3 -m unittest discover -s tests -v",
+    "passed": 8,
+    "failed": 0,
+    "package_code_sha256": "a9cd796b60cae545b350bc60f92f3438cf9d243ff1618aaba1384d9105928ec4",
+    "tests_code_sha256": "52c39359c2dbd8c85e6bac1da1916964465bd41380fa3a9c0611a18a5ba6dd52"
+  },
+  "checks": [
+    "exact_archive_files",
+    "crc_and_sha256",
+    "reproducible_archives",
+    "deployable_root_layout",
+    "empty_deployable_rejected_without_partial_delivery",
+    "secrets_and_symlinks_rejected",
+    "git_history_explicit_path_rejected",
+    "path_traversal_invalid_version_recursive_output_rejected",
+    "existing_version_not_overwritten"
+  ],
+  "workflow_manual_only": true,
+  "workflow_yaml_locally_validated": true,
+  "workflow_remote_test_executed": false,
+  "application_deployable_produced": false,
+  "deployment_performed": false,
+  "real_club_data_changed": false
+}

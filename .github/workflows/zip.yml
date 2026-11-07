@@ -1,0 +1,51 @@
+name: Générer les ZIP
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version des archives
+        required: true
+        default: "0.1.0"
+        type: string
+      deployable:
+        description: Générer aussi le ZIP Déployable (fichiers installables nécessaires)
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  archives:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Lire les sources
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Vérifier le générateur
+        run: python3 -m unittest discover -s tests -v
+      - name: Générer et vérifier les archives
+        env:
+          DELIVERY_VERSION: ${{ inputs.version }}
+          GENERATE_DEPLOYABLE: ${{ inputs.deployable }}
+        shell: bash
+        run: |
+          args=(--version "$DELIVERY_VERSION" --output livraison)
+          if [[ "$GENERATE_DEPLOYABLE" == "true" ]]; then
+            args+=(--deployable)
+          fi
+          python3 tools/package.py "${args[@]}"
+      - name: Livrer les ZIP et leurs empreintes
+        uses: actions/upload-artifact@v4
+        with:
+          name: JEUX-CLANDESTIN-SOR-${{ inputs.version }}
+          path: |
+            livraison/*.zip
+            livraison/MANIFESTE.json
+            livraison/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30

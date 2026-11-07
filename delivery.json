@@ -1,0 +1,15 @@
+{
+  "project": "JEUX-CLANDESTIN-SOR",
+  "source_paths": [
+    "README.md",
+    "AGENTS.md",
+    ".gitignore",
+    ".github",
+    "delivery.json",
+    "tools",
+    "tests",
+    "app",
+    "deploy/README.md"
+  ],
+  "deploy_directory": "deploy"
+}
